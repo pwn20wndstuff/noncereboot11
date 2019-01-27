@@ -40,7 +40,7 @@ kern_return_t init_kernel_base(void) {
     ret = task_info(tfpzero, TASK_DYLD_INFO, (task_info_t)&dyld_info, &count);
     
     if (ret != KERN_SUCCESS) {
-        ERRORLOG("Failed to get task INFOLOG\n");
+        ERRORLOG("Failed to get task info\n");
         return ret;
     }
     
