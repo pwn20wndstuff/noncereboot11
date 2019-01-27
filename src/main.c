@@ -6,6 +6,7 @@
 #include "nonce.h"
 #include "kutils.h"
 #include "debug.h"
+#include "patchfinder64.h"
 
 void printusage(void) {
     printf("-h this message\n");
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
                 break;
 
             case '?':
-                ERROR("Unknown option `-%c'", optopt);
+                ERRORLOG("Unknown option `-%c'", optopt);
                 break;
 
             default:
@@ -92,18 +93,28 @@ int main(int argc, char *argv[]) {
     }
 
     if (!(get || set || del)) {
-        ERROR("please specify g or s or d flag");
+        ERRORLOG("please specify g or s or d flag");
         printusage();
         return EXIT_FAILURE;
     }
 
     if (set && del) {
-        ERROR("cant set and delete nonce at once");
+        ERRORLOG("cant set and delete nonce at once");
         return EXIT_FAILURE;
     }
 
     if (init_tfpzero()) {
-        ERROR("failed to init tfpzero");
+        ERRORLOG("failed to init tfpzero");
+        return EXIT_FAILURE;
+    }
+    
+    if (init_kernel_base()) {
+        ERRORLOG("failed to init kernel_base");
+        return EXIT_FAILURE;
+    }
+    
+    if (init_kernel(kernel_base, NULL)) {
+        ERRORLOG("failed to init kernel");
         return EXIT_FAILURE;
     }
 
@@ -111,35 +122,37 @@ int main(int argc, char *argv[]) {
 
     if (!nounlock) {
         if (unlocknvram()) {
-            ERROR("failed to unlock nvram, but trying anyway");
+            ERRORLOG("failed to unlock nvram, but trying anyway");
         }
     }
 
     if (get) {
         retval = gethelper(set || del);
-        DEBUG("gethelper: %d", retval);
+        DEBUGLOG("gethelper: %d", retval);
     }
 
     if (del) {
         retval = delgen();
-        DEBUG("delgen: %d", retval);
+        DEBUGLOG("delgen: %d", retval);
     }
 
     if (set) {
         retval = setgen(gentoset);
-        DEBUG("setgen: %d", retval);
+        DEBUGLOG("setgen: %d", retval);
     }
 
     if (get && (set || del)) {
         retval = gethelper(set || del);
-        DEBUG("gethelper: %d", retval);
+        DEBUGLOG("gethelper: %d", retval);
     }
 
     if (!nounlock && !nolockback) {
        if (locknvram()) {
-            ERROR("failed to unlock nvram, cant do much about it");
+            ERRORLOG("failed to unlock nvram, cant do much about it");
         }
     }
+    
+    term_kernel();
 
     return retval;
 }

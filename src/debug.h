@@ -12,17 +12,17 @@ extern int loglevel;
 #define RAWLOG(fmt, args...)\
   fprintf(stderr, fmt, ##args);
 
-#define INFO(fmt, args...)\
+#define INFOLOG(fmt, args...)\
   if (loglevel >= lvlINFO) { \
-    RAWLOG("[INF]" fmt "\n", ##args);\
+    RAWLOG("[INF] " fmt "\n", ##args);\
   }
 
-#define DEBUG(fmt, args...)\
+#define DEBUGLOG(fmt, args...)\
   if (loglevel >= lvlDEBUG) { \
     RAWLOG("[DBG] " fmt "\n", ##args);\
   }
 
-#define ERROR(fmt, args...)\
+#define ERRORLOG(fmt, args...)\
   if (loglevel >= lvlERROR) { \
     RAWLOG("[ERR] " fmt "\n", ##args);\
   }

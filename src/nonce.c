@@ -23,10 +23,10 @@ CFMutableDictionaryRef makedict(const char *key, const char *val) {
 
     CFMutableDictionaryRef dict = CFDictionaryCreateMutable(NULL, 0, &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     if(!cfkey || !dict || !cfval) {
-        ERROR("failed to alloc cf objects {'%s': '%s'}", key, val);
+        ERRORLOG("failed to alloc cf objects {'%s': '%s'}", key, val);
         return NULL;
     } else {
-        DEBUG("made dict {'%s': '%s'}", key, val);
+        DEBUGLOG("made dict {'%s': '%s'}", key, val);
     }
     CFDictionarySetValue(dict, cfkey, cfval);
 
@@ -40,10 +40,10 @@ int applydict(CFMutableDictionaryRef dict) {
 
     io_service_t nvram = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODTNVRAM"));
     if(!MACH_PORT_VALID(nvram)) {
-        ERROR("Failed to get IODTNVRAM service");
+        ERRORLOG("Failed to get IODTNVRAM service");
     } else {
         kern_return_t kret = IORegistryEntrySetCFProperties(nvram, dict);
-        DEBUG("IORegistryEntrySetCFProperties: 0x%x (%s)\n", kret, mach_error_string(kret));
+        DEBUGLOG("IORegistryEntrySetCFProperties: 0x%x (%s)\n", kret, mach_error_string(kret));
         if(kret == KERN_SUCCESS) {
             ret = 0;
         }
@@ -61,12 +61,12 @@ char* getval(const char *key) {
 
     io_service_t nvram = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODTNVRAM"));
     if(!MACH_PORT_VALID(nvram)) {
-        ERROR("Failed to get IODTNVRAM service");
+        ERRORLOG("Failed to get IODTNVRAM service");
         return NULL;
     }
 
     err = IORegistryEntryGetProperty(nvram, key, (void*)buf, &length);
-    DEBUG("IORegistryEntryGetProperty(%s) == 0x%x (%s)\n", key, err, mach_error_string(err));
+    DEBUGLOG("IORegistryEntryGetProperty(%s) == 0x%x (%s)\n", key, err, mach_error_string(err));
     if (err != KERN_SUCCESS) {
         return NULL;
     }
@@ -80,14 +80,14 @@ int makenapply(const char *key, const char *val) {
 
     CFMutableDictionaryRef dict = makedict(key, val);
     if(!dict) {
-        ERROR("failed to make cf dict\n");
+        ERRORLOG("failed to make cf dict\n");
         return ret;
     }
 
     ret = applydict(dict);
 
     if (ret) {
-        ERROR("applydict failed\n");
+        ERRORLOG("applydict failed\n");
     }
 
     CFRelease(dict);

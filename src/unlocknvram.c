@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include "kutils.h"
-#include "finder.h"
 #include "offsets.h"
 #include "debug.h"
 
@@ -35,13 +34,13 @@ uint64_t get_iodtnvram_obj(void) {
     if (IODTNVRAMObj == 0) {
         io_service_t IODTNVRAMSrv = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODTNVRAM"));
         if (!MACH_PORT_VALID(IODTNVRAMSrv)) {
-            ERROR("Failed to get IODTNVRAM service");
+            ERRORLOG("Failed to get IODTNVRAM service");
             return 0;
         }
-        uint64_t nvram_up = find_port_address(IODTNVRAMSrv);
+        uint64_t nvram_up = get_address_of_port(getpid(), IODTNVRAMSrv);
         IODTNVRAMObj = rk64(nvram_up + OFF_IPC_PORT__IP_KOBJECT);
 
-        DEBUG("IODTNVRAM obj at 0x%llx", IODTNVRAMObj);
+        DEBUGLOG("IODTNVRAM obj at 0x%llx", IODTNVRAMObj);
     }
 
     return IODTNVRAMObj;
@@ -52,7 +51,7 @@ uint64_t orig_vtable = -1;
 int unlocknvram(void) {
     uint64_t obj = get_iodtnvram_obj();
     if (obj == 0) {
-        ERROR("get_iodtnvram_obj failed!");
+        ERRORLOG("get_iodtnvram_obj failed!");
         return 1;
     }
 
@@ -71,10 +70,10 @@ int unlocknvram(void) {
     uint64_t *buf = calloc(1, vtable_len);
     rkbuffer(vtable_start, buf, vtable_len);
 
-    DEBUG("IODTNVRAM vtable: 0x%llx - 0x%llx", vtable_start, vtable_end);
+    DEBUGLOG("IODTNVRAM vtable: 0x%llx - 0x%llx", vtable_start, vtable_end);
 
     for (int i = 0; i != vtable_len; i += sizeof(uint64_t)) {
-        DEBUG("\t[0x%03x]: 0x%llx", i, buf[i/sizeof(uint64_t)]);
+        DEBUGLOG("\t[0x%03x]: 0x%llx", i, buf[i/sizeof(uint64_t)]);
     }
 
     // alter it
@@ -89,24 +88,24 @@ int unlocknvram(void) {
     wk64(obj, fake_vtable);
 
     free(buf);
-    INFO("Unlocked nvram");
+    INFOLOG("Unlocked nvram");
     return 0;
 }
 
 int locknvram(void) {
     if (orig_vtable == -1) {
-        ERROR("Trying to lock nvram, but didnt unlock first");
+        ERRORLOG("Trying to lock nvram, but didnt unlock first");
         return -1;
     }
 
     uint64_t obj = get_iodtnvram_obj();
     if (obj == 0) { // would never happen but meh
-        ERROR("get_iodtnvram_obj failed!");
+        ERRORLOG("get_iodtnvram_obj failed!");
         return 1;
     }
     
     wk64(obj, orig_vtable);
 
-    INFO("Locked nvram");
+    INFOLOG("Locked nvram");
     return 0;
 }
