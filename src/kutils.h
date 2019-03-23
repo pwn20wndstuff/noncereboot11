@@ -4,11 +4,21 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
+#define SETOFFSET(offset, val) (offs.offset = val)
+#define GETOFFSET(offset) offs.offset
+
+typedef struct {
+    uint64_t kernel_task;
+} offsets_t;
+
+extern offsets_t offs;
+
 extern mach_port_t tfpzero;
 extern uint64_t kernel_base;
 
 kern_return_t init_tfpzero(void);
 kern_return_t init_kernel_base(void);
+kern_return_t init_offsets(void);
 
 size_t rkbuffer(uint64_t where, void *p, size_t size);
 uint32_t rk32(uint64_t where);

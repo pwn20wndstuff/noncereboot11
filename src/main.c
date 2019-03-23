@@ -114,8 +114,8 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     
-    if (init_kernel(kread, kernel_base, NULL)) {
-        ERRORLOG("failed to init kernel");
+    if (init_offsets()) {
+        ERRORLOG("failed to init offsets");
         return EXIT_FAILURE;
     }
 
@@ -152,8 +152,6 @@ int main(int argc, char *argv[]) {
             ERRORLOG("failed to unlock nvram, cant do much about it");
         }
     }
-    
-    term_kernel();
 
     return retval;
 }

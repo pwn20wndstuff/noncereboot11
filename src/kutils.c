@@ -2,9 +2,9 @@
 
 #include "kutils.h"
 #include "debug.h"
-#include "patchfinder64.h"
 #include "offsets.h"
 
+offsets_t offs;
 mach_port_t tfpzero;
 uint64_t kernel_base;
 
@@ -53,6 +53,45 @@ kern_return_t init_kernel_base(void) {
     }
     
     return ret;
+}
+
+kern_return_t init_offsets(void) {
+    CFURLRef fileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, CFSTR("/jb/offsets.plist"), kCFURLPOSIXPathStyle, false);
+    if (fileURL == NULL) {
+        ERRORLOG("Unable to create URL");
+        return KERN_FAILURE;
+    }
+    CFDataRef off_file_data;
+    SInt32 errorCode;
+    Boolean status = CFURLCreateDataAndPropertiesFromResource(
+            kCFAllocatorDefault, fileURL, &off_file_data,
+            NULL, NULL, &errorCode);
+    
+    CFRelease(fileURL);
+    if (!status) {
+        ERRORLOG("Unable to read /jb/offsets.plist");
+        return KERN_FAILURE;
+    }
+    
+    DEBUGLOG("off_file_data: %p", off_file_data);
+    CFPropertyListRef offsets = CFPropertyListCreateWithData(kCFAllocatorDefault, (CFDataRef)off_file_data, kCFPropertyListImmutable, NULL, NULL);
+    CFRelease(off_file_data);
+    if (offsets == NULL) {
+        ERRORLOG("Unable to convert /jb/offsets.plist to property list");
+        return KERN_FAILURE;
+    }
+    
+    if (CFGetTypeID(offsets) != CFDictionaryGetTypeID()) {
+        ERRORLOG("/jb/offsets.plist did not convert to a dictionary");
+        CFRelease(offsets);
+        return KERN_FAILURE;
+    }
+    
+    // TODO: CFStringGetCStringPtr is not to be relied upon like this... bad things will happen if this is not fixed
+    SETOFFSET(kernel_task, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelTask")), kCFStringEncodingUTF8), NULL, 16));
+    CFRelease(offsets);
+    
+    return KERN_SUCCESS;
 }
 
 /***** mach_vm.h *****/
@@ -206,7 +245,7 @@ size_t kwrite(uint64_t where, const void* p, size_t size) {
 
 uint64_t get_proc_struct_for_pid(pid_t pid)
 {
-    uint64_t proc = rk64(rk64(find_kernel_task()) + OFF_TASK__BSD_INFO);
+    uint64_t proc = rk64(rk64(GETOFFSET(kernel_task)) + OFF_TASK__BSD_INFO);
     while (proc) {
         if (rk32(proc + OFF_PROC__P_PID) == pid)
             return proc;
