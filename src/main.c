@@ -8,6 +8,11 @@
 #include "kutils.h"
 #include "debug.h"
 #include "patchfinder64.h"
+#include "parameters.h"
+#include "kc_parameters.h"
+#include "kernel_memory.h"
+#include "offsets.h"
+#include "kernel_call.h"
 
 void printusage(void) {
     printf("-h this message\n");
@@ -118,6 +123,14 @@ int main(int argc, char *argv[]) {
         ERRORLOG("failed to init offsets");
         return EXIT_FAILURE;
     }
+    
+#if __arm64e__
+    parameters_init();
+    kernel_task_port = tfpzero;
+    current_task = rk64(task_self_addr() + OFF_IPC_PORT__IP_KOBJECT);
+    kernel_task = rk64(GETOFFSET(kernel_task));
+    kernel_call_init();
+#endif
 
     int retval = EXIT_SUCCESS;
 
@@ -149,9 +162,13 @@ int main(int argc, char *argv[]) {
 
     if (!nounlock && !nolockback) {
        if (locknvram()) {
-            ERRORLOG("failed to unlock nvram, cant do much about it");
+            ERRORLOG("failed to lock nvram, can't do much about it");
         }
     }
+    
+#if __arm64e__
+    kernel_call_init();
+#endif
 
     return retval;
 }

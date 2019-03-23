@@ -52,6 +52,8 @@ kern_return_t init_kernel_base(void) {
         DEBUGLOG("kernel_base = 0x%016llx\n", kernel_base);
     }
     
+    kernel_slide = dyld_info.all_image_info_size;
+    
     return ret;
 }
 
@@ -89,6 +91,20 @@ kern_return_t init_offsets(void) {
     
     // TODO: CFStringGetCStringPtr is not to be relied upon like this... bad things will happen if this is not fixed
     SETOFFSET(kernel_task, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelTask")), kCFStringEncodingUTF8), NULL, 16));
+#if __arm64e__
+    SETOFFSET(paciza_pointer__l2tp_domain_module_start, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("PacizaPointerL2TPDomainModuleStart")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(paciza_pointer__l2tp_domain_module_stop, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("PacizaPointerL2TPDomainModuleStop")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(l2tp_domain_inited, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("L2TPDomainInited")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(sysctl__net_ppp_l2tp, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("SysctlNetPPPL2TP")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(sysctl_unregister_oid, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("SysctlUnregisterOid")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(mov_x0_x4__br_x5, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("MovX0X4BrX5")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(mov_x9_x0__br_x1, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("MovX9X0BrX1")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(mov_x10_x3__br_x6, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("MovX10X3BrX6")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(kernel_forge_pacia_gadget, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelForgePaciaGadget")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(kernel_forge_pacda_gadget, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelForgePacdaGadget")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(IOUserClient__vtable, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("IOUserClientVtable")), kCFStringEncodingUTF8), NULL, 16));
+    SETOFFSET(IORegistryEntry__getRegistryEntryID, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("IORegistryEntryGetRegistryEntryID")), kCFStringEncodingUTF8), NULL, 16));
+#endif
     CFRelease(offsets);
     
     return KERN_SUCCESS;
@@ -263,5 +279,10 @@ uint64_t get_address_of_port(pid_t pid, mach_port_t port)
     uint32_t port_index = port >> 8;
     const int sizeof_ipc_entry_t = 0x18;
     uint64_t port_addr = rk64(is_table + (port_index * sizeof_ipc_entry_t));
+    return port_addr;
+}
+
+uint64_t task_self_addr(void) {
+    uint64_t port_addr = get_address_of_port(getpid(), mach_task_self());
     return port_addr;
 }

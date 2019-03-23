@@ -16,7 +16,3 @@
 #define OFF_PROC__P_PID (kCFCoreFoundationVersionNumber >= 1535.12 ? 0x60 : 0x10)
 #define OFF_PROC__P_LIST 0x8
 #define OFF_PROC__TASK (kCFCoreFoundationVersionNumber >= 1535.12 ? 0x10 : 0x18)
-
-// from vtable start in bytes
-#define VTB_IODTNVRAM__SEARCHNVRAMPROPERTY 0x590
-#define VTB_IODTNVRAM__GETOFVARIABLEPERM 0x558
