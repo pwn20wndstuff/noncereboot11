@@ -1,12 +1,12 @@
-Package: science.xnu.nonceutil
+Package: nonceutil
 Name: nonceutil
 Depends: firmware (>= 11.0), cy+cpu.arm64
-Conflicts: science.xnu.noncereboot11, rocks.stek29.noncereboot11
-Replaces: science.xnu.noncereboot11, rocks.stek29.noncereboot11
-Version: 1.0
+Conflicts: science.xnu.nonceutil, science.xnu.noncereboot11, rocks.stek29.noncereboot11
+Replaces: science.xnu.nonceutil, science.xnu.noncereboot11, rocks.stek29.noncereboot11
+Version: 2.0
 Architecture: iphoneos-arm
 Description: A proper command line nonce setter for iOS 11. Based on noncereboot11 by stek29.
-Maintainer: pwn20wnd
-Author: pwn20wnd
+Maintainer: pwn20wnd <pwn20wndstuff@gmail.com>
+Author: pwn20wnd <pwn20wndstuff@gmail.com>
 Section: System
 Tag: role::hacker

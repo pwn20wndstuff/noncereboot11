@@ -1,7 +1,7 @@
-DEBUG=0
 THEOS=theos
 ARCHS=arm64 arm64e
 GO_EASY_ON_ME=1
+FINALPACKAGE=1
 
 include $(THEOS)/makefiles/common.mk
 
