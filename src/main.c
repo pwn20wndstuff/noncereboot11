@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "unlocknvram.h"
 #include "nonce.h"
@@ -113,7 +114,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     
-    if (init_kernel(kernel_base, NULL)) {
+    if (init_kernel(kread, kernel_base, NULL)) {
         ERRORLOG("failed to init kernel");
         return EXIT_FAILURE;
     }

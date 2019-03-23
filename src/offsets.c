@@ -1,20 +1,22 @@
-#include "offsets.h"
+#include <CoreFoundation/CoreFoundation.h>
 
-// iOS 11
+#define OFF_TASK__ITK_SPACE (kCFCoreFoundationVersionNumber >= 1535.12 ? 0x300 : 0x308)
+#if __arm64e__
+#define OFF_TASK__BSD_INFO 0x368
+#else
+#define OFF_TASK__BSD_INFO (kCFCoreFoundationVersionNumber >= 1535.12 ? 0x358 : 0x368)
+#endif
 
-unsigned OFF_TASK__ITK_SPACE = 0x308;
-unsigned OFF_TASK__BSD_INFO = 0x368;
+#define OFF_IPC_PORT__IP_KOBJECT 0x68
 
-unsigned OFF_IPC_PORT__IP_KOBJECT = 0x68; 
+#define OFF_IPC_SPACE__IS_TABLE 0x20
 
-unsigned OFF_IPC_SPACE__IS_TABLE = 0x20;
+#define SIZ_IPC_ENTRY_T 0x18
 
-unsigned SIZ_IPC_ENTRY_T = 0x18;
-
-unsigned OFF_PROC__P_PID = 0x10;
-unsigned OFF_PROC__P_LIST = 0x8;
-unsigned OFF_PROC__TASK = 0x18;
+#define OFF_PROC__P_PID (kCFCoreFoundationVersionNumber >= 1535.12 ? 0x60 : 0x10)
+#define OFF_PROC__P_LIST 0x8
+#define OFF_PROC__TASK (kCFCoreFoundationVersionNumber >= 1535.12 ? 0x10 : 0x18)
 
 // from vtable start in bytes
-unsigned VTB_IODTNVRAM__SEARCHNVRAMPROPERTY = 0x590;
-unsigned VTB_IODTNVRAM__GETOFVARIABLEPERM   = 0x558;
+#define VTB_IODTNVRAM__SEARCHNVRAMPROPERTY 0x590
+#define VTB_IODTNVRAM__GETOFVARIABLEPERM 0x558
