@@ -114,11 +114,6 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     
-    if (init_kernel_base()) {
-        ERRORLOG("failed to init kernel_base");
-        return EXIT_FAILURE;
-    }
-    
     if (init_offsets()) {
         ERRORLOG("failed to init offsets");
         return EXIT_FAILURE;

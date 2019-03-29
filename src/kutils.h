@@ -30,7 +30,6 @@ extern uint64_t kernel_base;
 extern uint64_t kernel_slide;
 
 kern_return_t init_tfpzero(void);
-kern_return_t init_kernel_base(void);
 kern_return_t init_offsets(void);
 
 size_t rkbuffer(uint64_t where, void *p, size_t size);

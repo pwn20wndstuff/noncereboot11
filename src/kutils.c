@@ -8,55 +8,6 @@ offsets_t offs;
 mach_port_t tfpzero;
 uint64_t kernel_base;
 
-kern_return_t init_tfpzero(void) {
-    kern_return_t ret;
-    tfpzero = MACH_PORT_NULL;
-
-    host_t host = mach_host_self();
-    ret = host_get_special_port(host, HOST_LOCAL_NODE, 4, &tfpzero);
-    
-    if (ret != KERN_SUCCESS) {
-        ERRORLOG("Failed to get kernel_task\n");
-        return ret;
-    }
-
-    ret = MACH_PORT_VALID(tfpzero) ? KERN_SUCCESS : KERN_FAILURE;
-
-    if (ret != KERN_SUCCESS) {
-        ERRORLOG("kernel_task is not valid\n");
-    } else {
-        DEBUGLOG("kernel_task = 0x%08x\n", tfpzero);
-    }
-
-    return ret;
-}
-
-kern_return_t init_kernel_base(void) {
-    kern_return_t ret;
-    kernel_base = 0;
-    
-    struct task_dyld_info dyld_info = { 0 };
-    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
-    ret = task_info(tfpzero, TASK_DYLD_INFO, (task_info_t)&dyld_info, &count);
-    
-    if (ret != KERN_SUCCESS) {
-        ERRORLOG("Failed to get task info\n");
-        return ret;
-    }
-    
-    ret = !((kernel_base = dyld_info.all_image_info_addr) != 0);
-    
-    if (ret != KERN_SUCCESS) {
-        ERRORLOG("kernel_base is not valid\n");
-    } else {
-        DEBUGLOG("kernel_base = 0x%016llx\n", kernel_base);
-    }
-    
-    kernel_slide = dyld_info.all_image_info_size;
-    
-    return ret;
-}
-
 kern_return_t init_offsets(void) {
     CFURLRef fileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, CFSTR("/jb/offsets.plist"), kCFURLPOSIXPathStyle, false);
     if (fileURL == NULL) {
@@ -90,6 +41,8 @@ kern_return_t init_offsets(void) {
     }
     
     // TODO: CFStringGetCStringPtr is not to be relied upon like this... bad things will happen if this is not fixed
+    kernel_base = (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelBase")), kCFStringEncodingUTF8), NULL, 16);
+    kernel_slide = (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelSlide")), kCFStringEncodingUTF8), NULL, 16);
     SETOFFSET(kernel_task, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("KernelTask")), kCFStringEncodingUTF8), NULL, 16));
 #if __arm64e__
     SETOFFSET(paciza_pointer__l2tp_domain_module_start, (uint64_t)strtoull(CFStringGetCStringPtr(CFDictionaryGetValue(offsets, CFSTR("PacizaPointerL2TPDomainModuleStart")), kCFStringEncodingUTF8), NULL, 16));
